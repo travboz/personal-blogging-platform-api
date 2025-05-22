@@ -10,7 +10,7 @@ type Store interface {
 	Insert(context.Context, *models.Article) error
 	GetArticleById(context.Context, string) (*models.Article, error)
 	FetchAllArticles(context.Context) ([]*models.Article, error)
-	UpdateArtcle(context.Context, string, models.Article) error
+	UpdateArtcle(context.Context, string, *models.Article) (*models.Article, error)
 	DeleteArticle(context.Context, string) error
 	Shutdown(context.Context) error
 }

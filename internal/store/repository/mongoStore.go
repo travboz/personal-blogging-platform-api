@@ -9,6 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type MongoStore struct {
@@ -78,11 +79,63 @@ func (m *MongoStore) FetchAllArticles(ctx context.Context) ([]*models.Article, e
 	return articles, nil
 }
 
-func (m *MongoStore) UpdateArtcle(context.Context, string, models.Article) error {
-	return nil
+func (m *MongoStore) UpdateArtcle(ctx context.Context, id string, article *models.Article) (*models.Article, error) {
+	article_id, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, err // invalid ID format
+	}
+
+	filter := bson.M{"_id": article_id}
+	update := bson.D{
+		{"$set", bson.D{
+			{"content", article.Content},
+			{"tags", article.Tags},
+		}},
+	}
+
+	upsert := true
+	after := options.After
+	opt := options.FindOneAndUpdateOptions{
+		ReturnDocument: &after,
+		Upsert:         &upsert,
+	}
+
+	result := m.articles.FindOneAndUpdate(
+		ctx,
+		filter,
+		update,
+		&opt,
+	)
+
+	var updatedArticle models.Article
+
+	if err = result.Decode(&updatedArticle); err != nil {
+		switch {
+		case errors.Is(err, mongo.ErrNoDocuments):
+			return nil, ErrRecordNotFound
+		default:
+			return nil, err
+		}
+	}
+
+	return &updatedArticle, nil
 }
 
-func (m *MongoStore) DeleteArticle(context.Context, string) error {
+func (m *MongoStore) DeleteArticle(ctx context.Context, id string) error {
+	article_id, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return err
+	}
+
+	result, err := m.articles.DeleteOne(ctx, bson.M{"_id": article_id})
+	if err != nil {
+		return err
+	}
+
+	if result.DeletedCount == 0 {
+		return ErrRecordNotFound
+	}
+
 	return nil
 }
 
