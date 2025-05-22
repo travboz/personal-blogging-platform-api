@@ -12,6 +12,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"github.com/travboz/backend-projects/personal-blog-api/internal/db"
 	"github.com/travboz/backend-projects/personal-blog-api/internal/env"
+	"github.com/travboz/backend-projects/personal-blog-api/internal/store/repository"
 )
 
 func init() {
@@ -23,9 +24,6 @@ func init() {
 }
 
 func main() {
-	router := httprouter.New()
-	router.HandlerFunc(http.MethodGet, "/health", healthcheck)
-
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
 	mongo_uri := env.GetString(
@@ -40,6 +38,13 @@ func main() {
 	}
 
 	logger.Info("mongodb successfully connected")
+
+	store := repository.NewMongoStore(env.GetString("MONGO_DB_NAME", "blog_articles"), mongoClient)
+
+	router := httprouter.New()
+
+	router.Handler(http.MethodGet, "/health", healthcheckHandler(logger))
+	router.Handler(http.MethodPost, "/articles", createArticleHandler(store, logger))
 
 	srv := &http.Server{
 		Addr:         env.GetString("SERVER_PORT", ":7666"),
