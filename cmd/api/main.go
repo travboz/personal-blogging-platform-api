@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/joho/godotenv"
-	"github.com/julienschmidt/httprouter"
 	"github.com/travboz/backend-projects/personal-blog-api/internal/db"
 	"github.com/travboz/backend-projects/personal-blog-api/internal/env"
 	"github.com/travboz/backend-projects/personal-blog-api/internal/store/repository"
@@ -41,12 +40,7 @@ func main() {
 
 	store := repository.NewMongoStore(env.GetString("MONGO_DB_NAME", "blog_articles"), mongoClient)
 
-	router := httprouter.New()
-
-	router.Handler(http.MethodGet, "/health", healthcheckHandler(logger))
-	router.Handler(http.MethodPost, "/articles", createArticleHandler(store, logger))
-	router.Handler(http.MethodGet, "/articles", fetchAllArticlesHandler(store, logger))
-	router.Handler(http.MethodGet, "/articles/:id", fetchAllArticlesHandler(store, logger))
+	router := routes(logger, store)
 
 	srv := &http.Server{
 		Addr:         env.GetString("SERVER_PORT", ":7666"),

@@ -10,7 +10,7 @@ import (
 	"github.com/travboz/backend-projects/personal-blog-api/internal/store/repository"
 )
 
-func createArticleHandler(repo repository.Store, logger *slog.Logger) http.Handler {
+func createArticleHandler(logger *slog.Logger, store repository.Store) http.Handler {
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var input struct {
@@ -30,7 +30,7 @@ func createArticleHandler(repo repository.Store, logger *slog.Logger) http.Handl
 			Tags:      input.Tags,
 		}
 
-		err = repo.Insert(r.Context(), article)
+		err = store.Insert(r.Context(), article)
 		if err != nil {
 			serverErrorResponse(logger, w, r, err)
 		}
@@ -42,10 +42,10 @@ func createArticleHandler(repo repository.Store, logger *slog.Logger) http.Handl
 	})
 }
 
-func fetchAllArticlesHandler(repo repository.Store, logger *slog.Logger) http.Handler {
+func fetchAllArticlesHandler(logger *slog.Logger, store repository.Store) http.Handler {
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		articles, err := repo.FetchAllArticles(r.Context())
+		articles, err := store.FetchAllArticles(r.Context())
 		if err != nil {
 			serverErrorResponse(logger, w, r, err)
 		}
@@ -57,12 +57,12 @@ func fetchAllArticlesHandler(repo repository.Store, logger *slog.Logger) http.Ha
 	})
 }
 
-func getArticleByIdHandler(repo repository.Store, logger *slog.Logger) http.Handler {
+func getArticleByIdHandler(logger *slog.Logger, store repository.Store) http.Handler {
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		id := readIDParam(r)
 
-		article, err := repo.GetArticleById(r.Context(), id)
+		article, err := store.GetArticleById(r.Context(), id)
 		if err != nil {
 			switch {
 			case errors.Is(err, repository.ErrRecordNotFound):
