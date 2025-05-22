@@ -12,8 +12,9 @@ func routes(logger *slog.Logger, store repository.Store) http.Handler {
 	router := httprouter.New()
 
 	router.Handler(http.MethodGet, "/health", healthcheckHandler(logger))
-	router.Handler(http.MethodPost, "/articles", createArticleHandler(store, logger))
-	router.Handler(http.MethodGet, "/articles", fetchAllArticlesHandler(store, logger))
-	router.Handler(http.MethodGet, "/articles/:id", fetchAllArticlesHandler(store, logger))
+	router.Handler(http.MethodPost, "/articles", createArticleHandler(logger, store))
+	router.Handler(http.MethodGet, "/articles", fetchAllArticlesHandler(logger, store))
+	router.Handler(http.MethodGet, "/articles/:id", fetchAllArticlesHandler(logger, store))
 
+	return router
 }
