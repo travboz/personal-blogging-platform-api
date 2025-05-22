@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/travboz/backend-projects/personal-blog-api/internal/data/models"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -36,8 +37,26 @@ func (m *MongoStore) GetArticleById(context.Context, string) (*models.Article, e
 	return nil, nil
 }
 
-func (m *MongoStore) FetchAllArticles(context.Context) ([]*models.Article, error) {
-	return nil, nil
+func (m *MongoStore) FetchAllArticles(ctx context.Context) ([]*models.Article, error) {
+	cursor, err := m.articles.Find(ctx, bson.D{})
+	if err != nil {
+		return nil, err
+	}
+
+	defer cursor.Close(ctx)
+
+	var articles []*models.Article
+
+	for cursor.Next(ctx) {
+		var article *models.Article
+		if err := cursor.Decode(&article); err != nil {
+			return nil, err
+		}
+
+		articles = append(articles, article)
+	}
+
+	return articles, nil
 }
 
 func (m *MongoStore) UpdateArtcle(context.Context, string, models.Article) error {

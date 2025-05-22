@@ -40,3 +40,18 @@ func createArticleHandler(repo repository.Store, logger *slog.Logger) http.Handl
 		}
 	})
 }
+
+func fetchAllArticlesHandler(repo repository.Store, logger *slog.Logger) http.Handler {
+
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		articles, err := repo.FetchAllArticles(r.Context())
+		if err != nil {
+			serverErrorResponse(logger, w, r, err)
+		}
+
+		err = writeJSON(w, http.StatusOK, envelope{"articles": articles}, nil)
+		if err != nil {
+			serverErrorResponse(logger, w, r, err)
+		}
+	})
+}

@@ -45,6 +45,7 @@ func main() {
 
 	router.Handler(http.MethodGet, "/health", healthcheckHandler(logger))
 	router.Handler(http.MethodPost, "/articles", createArticleHandler(store, logger))
+	router.Handler(http.MethodGet, "/articles", fetchAllArticlesHandler(store, logger))
 
 	srv := &http.Server{
 		Addr:         env.GetString("SERVER_PORT", ":7666"),
