@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/travboz/backend-projects/personal-blog-api/internal/data/models"
@@ -33,8 +34,26 @@ func (m *MongoStore) Insert(ctx context.Context, article *models.Article) error 
 	return err
 }
 
-func (m *MongoStore) GetArticleById(context.Context, string) (*models.Article, error) {
-	return nil, nil
+func (m *MongoStore) GetArticleById(ctx context.Context, id string) (*models.Article, error) {
+
+	article_id, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, err
+	}
+
+	result := m.articles.FindOne(ctx, bson.M{"_id": article_id})
+
+	var article models.Article
+	if err = result.Decode(&article); err != nil {
+		switch {
+		case errors.Is(err, mongo.ErrNoDocuments):
+			return nil, ErrRecordNotFound
+		default:
+			return nil, err
+		}
+	}
+
+	return &article, nil
 }
 
 func (m *MongoStore) FetchAllArticles(ctx context.Context) ([]*models.Article, error) {

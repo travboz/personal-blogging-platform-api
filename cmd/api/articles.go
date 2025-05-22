@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"log/slog"
 	"net/http"
 	"time"
@@ -53,5 +54,30 @@ func fetchAllArticlesHandler(repo repository.Store, logger *slog.Logger) http.Ha
 		if err != nil {
 			serverErrorResponse(logger, w, r, err)
 		}
+	})
+}
+
+func getArticleByIdHandler(repo repository.Store, logger *slog.Logger) http.Handler {
+
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		id := readIDParam(r)
+
+		article, err := repo.GetArticleById(r.Context(), id)
+		if err != nil {
+			switch {
+			case errors.Is(err, repository.ErrRecordNotFound):
+				notFoundResponse(logger, w, r)
+			default:
+				serverErrorResponse(logger, w, r, err)
+			}
+
+			return
+		}
+
+		err = writeJSON(w, http.StatusOK, envelope{"article": article}, nil)
+		if err != nil {
+			serverErrorResponse(logger, w, r, err)
+		}
+
 	})
 }

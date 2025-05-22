@@ -6,25 +6,15 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"strconv"
 	"strings"
 
 	"github.com/julienschmidt/httprouter"
 )
 
-// Retrieve the "id" URL parameter from the current request context, then convert it to
-// an integer and return it. If the operation isn't successful, return 0 and an error.
-func readIDParam(r *http.Request) (int64, error) {
-	// When httprouter is parsing a request, any interpolated URL parameters will be
-	// stored in the request context.
+// Retrieve the "id" URL parameter from the current request context.
+func readIDParam(r *http.Request) string {
 	params := httprouter.ParamsFromContext(r.Context())
-
-	id, err := strconv.ParseInt(params.ByName("id"), 10, 64)
-	if err != nil || id < 1 {
-		return 0, errors.New("invalid id parameter")
-	}
-
-	return id, nil
+	return params.ByName("id")
 }
 
 type envelope map[string]any
