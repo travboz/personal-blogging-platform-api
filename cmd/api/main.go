@@ -1,10 +1,12 @@
 package main
 
 import (
+	"context"
 	"log"
 	"log/slog"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/joho/godotenv"
 	"github.com/julienschmidt/httprouter"
@@ -31,18 +33,28 @@ func main() {
 		"mongodb://travis:secret@localhost:27002/blog_articles?authSource=admin&readPreference=primary&appname=MongDB%20Compass&directConnection=true&ssl=false",
 	)
 
-	_, err := db.NewMongoDBClient(mongo_uri)
+	mongoClient, err := db.NewMongoDBClient(mongo_uri)
 	if err != nil {
 		logger.Error(err.Error())
 		os.Exit(1)
 	}
+
 	logger.Info("mongodb successfully connected")
 
-	port := ":7666"
+	srv := &http.Server{
+		Addr:         env.GetString("SERVER_PORT", ":7666"),
+		Handler:      router,
+		IdleTimeout:  time.Minute,
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
+		ErrorLog:     slog.NewLogLogger(logger.Handler(), slog.LevelError),
+	}
 
-	logger.Info("running server", "port", port)
-	if err := http.ListenAndServe(port, router); err != nil {
+	logger.Info("running server", "port", srv.Addr)
+
+	if err := srv.ListenAndServe(); err != nil {
 		logger.Error(err.Error())
+		mongoClient.Disconnect(context.Background())
 		os.Exit(1)
 	}
 }
