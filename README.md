@@ -6,6 +6,7 @@ Initial project was highly-coupled and had a handful.
 The project has been refactored and implements the 
 repository pattern to reduce that decouple the database and
 service logic. 
+
 Commit history includes multiple changes to the code. 
 
 
