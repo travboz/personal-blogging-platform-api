@@ -20,7 +20,7 @@ articles=(
 
 # Loop through each user and insert them using curl
 for article in "${articles[@]}"; do
-  curl -X POST "$url" \
+  curl -s -o /dev/null -w "" -X POST "$url" \
     -H "Content-Type: application/json" \
     -d "$article"
   # echo -e "\Article inserted: $article\n"

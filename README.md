@@ -1,20 +1,22 @@
-# Go MongoDB User API
+# Personal Blogging Platform API
 ![Superhero Gopher - Project Title Image](https://raw.githubusercontent.com/egonelbre/gophers/63b1f5a9f334f9e23735c6e09ac003479ffe5df5/vector/superhero/standing.svg)
 
-A simple CRUD API using Go, Docker, and MongoDB. 
-Initial project was highly-coupled and had a handful. 
-The project has been refactored and implements the 
-repository pattern to reduce that decouple the database and
-service logic. 
+## Description
 
-Commit history includes multiple changes to the code. 
+This is a RESTful API designed to power a personal blog. It provides endpoints to manage blog articles, allowing for full CRUD functionality — Create, Read, Update, and Delete. Articles can be listed, filtered by tags or publish date, retrieved individually by ID, and managed through standard HTTP methods.
 
+The brief follows:
+[Personal Blogging Platform API Project](https://roadmap.sh/backend/project-ideas#1-personal-blogging-platform-api:~:text=1.%20Personal%20Blogging%20Platform%20API)
 
 ## Features
 
-- RESTful API: Supports creating, retrieving, and deleting users via HTTP endpoints
-- Abstraction of storage logic for decoupled database: use of repository pattern for decoupling
-- Use `net/http` for routing and request/response handling
+- List all articles with optional filters (e.g., tags, publish date)
+- Retrieve a single article by ID
+- Create a new article
+- Update an existing article by ID
+- Delete an article by ID
+- Implements basic CRUD operations over HTTP
+
 
 ## Getting Started
 
@@ -44,42 +46,45 @@ Commit history includes multiple changes to the code.
     ```
 5. Navigate to `http://localhost<SERVER_PORT>` and call an endpoint
 
+I will use example port `":7666"`.
+
 ### `.env` file
 This server uses a `.env` file for basic configuration.
 Here is an example of the `.env`:
    ```sh
-   DB_CONTAINER_NAME=MONGO-USER-CRUD
-   SERVER_PORT=":8080"
-   MONGO_DB_NAME=mongo_user_crud
-   MONGO_DB_USERNAME=<your-username>
-   MONGO_DB_PASSWORD=<your-password>
-   MONGODB_URI=mongodb://<your-username>:<your-password>@localhost:27017/mongo_user_crud?authSource=admin&readPreference=primary&appname=MongDB%20Compass&directConnection=true&ssl=false
-   COMPASS_USER_MONGODB_URI=mongodb://<your-username>:<your-password>@localhost:27017/mongo_user_crud?authSource=admin&readPreference=primary&appname=MongDB%20Compass&directConnection=true&ssl=false
+BLOG_DB_CONTAINER_NAME=blog-mongo-db
+DB_ACCESS_PORT=27002
+
+SERVER_PORT=":7666"
+MONGO_DB_NAME=blog_articles
+MONGO_DB_USERNAME=username
+MONGO_DB_PASSWORD=secret
+MONGODB_URI=mongodb://username:secret@localhost:${DB_ACCESS_PORT}/${MONGO_DB_NAME}?authSource=admin&readPreference=primary&appname=MongDB%20Compass&directConnection=true&ssl=false
+COMPASS_USER_MONGODB_URI=mongodb://username:secret@localhost:27002/blog_articles?authSource=admin&readPreference=primary&appname=MongDB%20Compass&directConnection=true&ssl=false
    ```
    
-## API endpoints
 
-| Method   | Endpoint        | Description          |
-|----------|----------------|----------------------|
-| `GET`    | `/`            | Welcome message/health check     |
-| `POST`   | `/users`       | Create a new user   |
-| `GET`    | `/users`       | Get all users       |
-| `GET`    | `/users/{id}`  | Get user by ID      |
-| `PUT`    | `/users/{id}`  | Update a user       |
-| `DELETE` | `/users/{id}`  | Delete a user       |
+## API Endpoints
+
+| Method    | Endpoint           | Description                    |
+|-----------|--------------------|--------------------------------|
+| `GET`     | `/health`          | Health check                   |
+| `POST`    | `/articles`        | Create a new article           |
+| `GET`     | `/articles`        | Get all articles               |
+| `GET`     | `/articles/:id`    | Get article by ID              |
+| `PATCH`   | `/articles/:id`    | Update an article              |
+| `DELETE`  | `/articles/:id`    | Delete an article              |
 
 ## Example usage
 
 ### JSON payload structures
 
-#### Create user payload
+#### Create article payload
 
 ```json
 {
-  "name": "bob jones",
-  "email": "bob@jones.com",
-  "favourite_number": 25,
-  "active": false
+  "content": "this is the content for a new article",
+  "tags": ["these", "are", "the", "tags"]
 }
 ```
 
@@ -87,23 +92,19 @@ Here is an example of the `.env`:
 
 ```json
 {
-  "name": "new jones",
-  "email": "bob@jones.com",
-  "favourite_number": 1000,
-  "active": true
+  "content": "this is the NEW CONTENT for an existinf article",
+  "tags": ["where", "did", "the", "old", "tags", "go?"]
 }
 ```
 
 ### Endpoint example usage
 #### Create a user
 ```sh
-curl -X POST "http://localhost:8080/users" \
+curl -X POST "http://localhost:8080/articles" \
      -H "Content-Type: application/json" \
      -d '{
-       "name": "bob jones",
-       "email": "bob@jones.com",
-       "favourite_number": 25,
-       "active": false
+        "content": "this is the content for a new article",
+        "tags": ["these", "are", "the", "tags"]
      }'
 ```
 
@@ -112,26 +113,24 @@ curl -X POST "http://localhost:8080/users" \
 curl -X POST "http://localhost:8080/users/67a0a3eef39fc03fe52450b5" \
      -H "Content-Type: application/json" \
      -d '{
-       "name": "new jones",
-       "email": "bob@jones.com",
-       "favourite_number": 1000,
-       "active": true
-     }'
+        "content": "this is the NEW CONTENT for an existinf article",
+        "tags": ["where", "did", "the", "old", "tags", "go?"]
+      }'
 ```
 
 #### Get a user by id
 ```sh
-curl -X GET "http://localhost:8080/users/67a0a3eef39fc03fe52450b5"
+curl -X GET "http://localhost:7666/articles/67a0a3eef39fc03fe52450b5"
 ```
 
 #### Fetch all users
 ```sh
-curl http://localhost:8080/users
+curl http://localhost:7666/articles
 ```
 
 #### Delete a user
 ```sh
-curl -X DELETE "http://localhost:8080/users/67a0a3eef39fc03fe52450b5"
+curl -X DELETE "http://localhost:7666/articles/67a0a3eef39fc03fe52450b5"
 ```
 
 ## Contributing

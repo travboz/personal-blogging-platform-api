@@ -9,6 +9,7 @@ help:
 OUTPUT_BINARY=blog-api-crud
 OUTPUT_DIR=./bin
 ENTRY_DIR=./cmd/api
+SCRIPTS_DIR=./scripts
 
 .PHONY: build run clean
 
@@ -22,6 +23,11 @@ build:
 clean:
 	@echo "Cleaning files..."
 	@rm -rf $(OUTPUT_DIR)
+
+seed:
+	@echo "Seeding database..."
+	@${SCRIPTS_DIR}/seed_users.sh
+	@echo "Seeding complete."
 
 ## run: run the binary/server
 run: build
