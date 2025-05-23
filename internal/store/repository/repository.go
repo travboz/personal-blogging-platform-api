@@ -3,14 +3,14 @@ package repository
 import (
 	"context"
 
-	"github.com/travboz/backend-projects/personal-blog-api/internal/data/models"
+	"github.com/travboz/backend-projects/personal-blog-api/internal/data"
 )
 
 type Store interface {
-	Insert(context.Context, *models.Article) error
-	GetArticleById(context.Context, string) (*models.Article, error)
-	FetchAllArticles(context.Context) ([]*models.Article, error)
-	UpdateArtcle(context.Context, string, *models.Article) (*models.Article, error)
+	Insert(context.Context, *data.Article) error
+	GetArticleById(context.Context, string) (*data.Article, error)
+	FetchAllArticles(context.Context) ([]*data.Article, error)
+	UpdateArtcle(context.Context, string, *data.Article) (*data.Article, error)
 	DeleteArticle(context.Context, string) error
 	Shutdown(context.Context) error
 }

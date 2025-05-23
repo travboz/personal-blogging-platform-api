@@ -5,7 +5,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/travboz/backend-projects/personal-blog-api/internal/data/models"
+	"github.com/travboz/backend-projects/personal-blog-api/internal/data"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -24,7 +24,7 @@ func NewMongoStore(dbName string, db *mongo.Client) *MongoStore {
 	}
 }
 
-func (m *MongoStore) Insert(ctx context.Context, article *models.Article) error {
+func (m *MongoStore) Insert(ctx context.Context, article *data.Article) error {
 	article.ID = primitive.NewObjectID()
 
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
@@ -35,7 +35,7 @@ func (m *MongoStore) Insert(ctx context.Context, article *models.Article) error 
 	return err
 }
 
-func (m *MongoStore) GetArticleById(ctx context.Context, id string) (*models.Article, error) {
+func (m *MongoStore) GetArticleById(ctx context.Context, id string) (*data.Article, error) {
 
 	article_id, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
@@ -44,7 +44,7 @@ func (m *MongoStore) GetArticleById(ctx context.Context, id string) (*models.Art
 
 	result := m.articles.FindOne(ctx, bson.M{"_id": article_id})
 
-	var article models.Article
+	var article data.Article
 	if err = result.Decode(&article); err != nil {
 		switch {
 		case errors.Is(err, mongo.ErrNoDocuments):
@@ -57,7 +57,7 @@ func (m *MongoStore) GetArticleById(ctx context.Context, id string) (*models.Art
 	return &article, nil
 }
 
-func (m *MongoStore) FetchAllArticles(ctx context.Context) ([]*models.Article, error) {
+func (m *MongoStore) FetchAllArticles(ctx context.Context) ([]*data.Article, error) {
 	cursor, err := m.articles.Find(ctx, bson.D{})
 	if err != nil {
 		return nil, err
@@ -65,10 +65,10 @@ func (m *MongoStore) FetchAllArticles(ctx context.Context) ([]*models.Article, e
 
 	defer cursor.Close(ctx)
 
-	var articles []*models.Article
+	var articles []*data.Article
 
 	for cursor.Next(ctx) {
-		var article *models.Article
+		var article *data.Article
 		if err := cursor.Decode(&article); err != nil {
 			return nil, err
 		}
@@ -79,7 +79,7 @@ func (m *MongoStore) FetchAllArticles(ctx context.Context) ([]*models.Article, e
 	return articles, nil
 }
 
-func (m *MongoStore) UpdateArtcle(ctx context.Context, id string, article *models.Article) (*models.Article, error) {
+func (m *MongoStore) UpdateArtcle(ctx context.Context, id string, article *data.Article) (*data.Article, error) {
 	article_id, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return nil, err // invalid ID format
@@ -107,7 +107,7 @@ func (m *MongoStore) UpdateArtcle(ctx context.Context, id string, article *model
 		&opt,
 	)
 
-	var updatedArticle models.Article
+	var updatedArticle data.Article
 
 	if err = result.Decode(&updatedArticle); err != nil {
 		switch {

@@ -2,12 +2,14 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"time"
 
-	"github.com/travboz/backend-projects/personal-blog-api/internal/data/models"
+	"github.com/travboz/backend-projects/personal-blog-api/internal/data"
 	"github.com/travboz/backend-projects/personal-blog-api/internal/store/repository"
+	"github.com/travboz/backend-projects/personal-blog-api/internal/validator"
 )
 
 func createArticleHandler(logger *slog.Logger, store repository.Store) http.Handler {
@@ -24,10 +26,20 @@ func createArticleHandler(logger *slog.Logger, store repository.Store) http.Hand
 			return
 		}
 
-		article := &models.Article{
+		article := &data.Article{
 			Content:   input.Content,
 			CreatedAt: time.Now(),
 			Tags:      input.Tags,
+		}
+
+		// Initialize a new Validator.
+		v := validator.New()
+
+		// Call the ValidateMovie() function and return a response containing the errors if
+		// any of the checks fail.
+		if data.ValidateArticle(v, article); !v.Valid() {
+			failedValidationResponse(logger, w, r, v.Errors)
+			return
 		}
 
 		err = store.Insert(r.Context(), article)
@@ -35,7 +47,11 @@ func createArticleHandler(logger *slog.Logger, store repository.Store) http.Hand
 			serverErrorResponse(logger, w, r, err)
 		}
 
-		err = writeJSON(w, http.StatusOK, envelope{"article": article}, nil)
+		// telling the client where to find the new movie at:
+		headers := make(http.Header)
+		headers.Set("Location", fmt.Sprintf("/v1/movies/%s", article.ID.Hex()))
+
+		err = writeJSON(w, http.StatusOK, envelope{"article": article}, headers)
 		if err != nil {
 			serverErrorResponse(logger, w, r, err)
 		}
@@ -123,9 +139,19 @@ func updateArticleHandler(logger *slog.Logger, store repository.Store) http.Hand
 			return
 		}
 
-		article := &models.Article{
+		article := &data.Article{
 			Content: input.Content,
 			Tags:    input.Tags,
+		}
+
+		// Initialize a new Validator.
+		v := validator.New()
+
+		// Call the ValidateMovie() function and return a response containing the errors if
+		// any of the checks fail.
+		if data.ValidateArticle(v, article); !v.Valid() {
+			failedValidationResponse(logger, w, r, v.Errors)
+			return
 		}
 
 		updated, err := store.UpdateArtcle(r.Context(), id, article)
