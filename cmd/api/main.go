@@ -4,9 +4,7 @@ import (
 	"context"
 	"log"
 	"log/slog"
-	"net/http"
 	"os"
-	"time"
 
 	"github.com/joho/godotenv"
 	"github.com/travboz/backend-projects/personal-blog-api/internal/db"
@@ -46,18 +44,9 @@ func main() {
 
 	router := routes(logger, store)
 
-	srv := &http.Server{
-		Addr:         env.GetString("SERVER_PORT", ":7666"),
-		Handler:      router,
-		IdleTimeout:  time.Minute,
-		ReadTimeout:  5 * time.Second,
-		WriteTimeout: 10 * time.Second,
-		ErrorLog:     slog.NewLogLogger(logger.Handler(), slog.LevelError),
-	}
+	err = serve(logger, router)
 
-	logger.Info("running server", "port", srv.Addr)
-
-	if err := srv.ListenAndServe(); err != nil {
+	if err != nil {
 		logger.Error(err.Error())
 		mongoClient.Disconnect(context.Background())
 		os.Exit(1)
