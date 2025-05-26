@@ -38,7 +38,11 @@ func main() {
 
 	logger.Info("mongodb successfully connected")
 
-	store := repository.NewMongoStore(env.GetString("MONGO_DB_NAME", "blog_articles"), mongoClient)
+	store, err := repository.NewMongoStore(env.GetString("MONGO_DB_NAME", "blog_articles"), mongoClient)
+	if err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
+	}
 
 	router := routes(logger, store)
 

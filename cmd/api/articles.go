@@ -32,11 +32,8 @@ func createArticleHandler(logger *slog.Logger, store repository.Store) http.Hand
 			Tags:      input.Tags,
 		}
 
-		// Initialize a new Validator.
 		v := validator.New()
 
-		// Call the ValidateMovie() function and return a response containing the errors if
-		// any of the checks fail.
 		if data.ValidateArticle(v, article); !v.Valid() {
 			failedValidationResponse(logger, w, r, v.Errors)
 			return
@@ -47,7 +44,7 @@ func createArticleHandler(logger *slog.Logger, store repository.Store) http.Hand
 			serverErrorResponse(logger, w, r, err)
 		}
 
-		// telling the client where to find the new movie at:
+		// telling the client where to find the new article at:
 		headers := make(http.Header)
 		headers.Set("Location", fmt.Sprintf("/v1/movies/%s", article.ID.Hex()))
 
@@ -61,7 +58,17 @@ func createArticleHandler(logger *slog.Logger, store repository.Store) http.Hand
 func fetchAllArticlesHandler(logger *slog.Logger, store repository.Store) http.Handler {
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		articles, err := store.FetchAllArticles(r.Context())
+		var input struct {
+			Content string
+			Tags    []string
+		}
+
+		qs := r.URL.Query()
+
+		input.Content = readString(qs, "content", "")
+		input.Tags = readTags(qs, "tags", []string{})
+
+		articles, err := store.FetchAllArticles(r.Context(), input.Content, input.Tags)
 		if err != nil {
 			serverErrorResponse(logger, w, r, err)
 		}
@@ -144,11 +151,8 @@ func updateArticleHandler(logger *slog.Logger, store repository.Store) http.Hand
 			Tags:    input.Tags,
 		}
 
-		// Initialize a new Validator.
 		v := validator.New()
 
-		// Call the ValidateMovie() function and return a response containing the errors if
-		// any of the checks fail.
 		if data.ValidateArticle(v, article); !v.Valid() {
 			failedValidationResponse(logger, w, r, v.Errors)
 			return

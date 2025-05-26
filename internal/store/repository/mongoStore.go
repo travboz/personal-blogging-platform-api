@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/travboz/backend-projects/personal-blog-api/internal/data"
@@ -16,12 +17,24 @@ type MongoStore struct {
 	articles *mongo.Collection
 }
 
-func NewMongoStore(dbName string, db *mongo.Client) *MongoStore {
+func NewMongoStore(dbName string, db *mongo.Client) (*MongoStore, error) {
 	col := db.Database(dbName).Collection("articles")
+
+	// ensure indexes
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	mod := mongo.IndexModel{
+		Keys: bson.D{{Key: "content", Value: "text"}}, // example index
+	}
+	_, err := col.Indexes().CreateOne(ctx, mod)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create index: %w", err)
+	}
 
 	return &MongoStore{
 		articles: col,
-	}
+	}, nil
 }
 
 func (m *MongoStore) Insert(ctx context.Context, article *data.Article) error {
@@ -57,8 +70,29 @@ func (m *MongoStore) GetArticleById(ctx context.Context, id string) (*data.Artic
 	return &article, nil
 }
 
-func (m *MongoStore) FetchAllArticles(ctx context.Context) ([]*data.Article, error) {
-	cursor, err := m.articles.Find(ctx, bson.D{})
+func (m *MongoStore) FetchAllArticles(ctx context.Context, content string, tags []string) ([]*data.Article, error) {
+
+	// filtering using content, works with single terms and phrases
+	filter := bson.M{}
+
+	if content != "" {
+		filter["content"] = bson.M{
+			"$regex": primitive.Regex{
+				Pattern: content,
+				Options: "i",
+			},
+		}
+	}
+
+	if len(tags) > 0 {
+		filter["tags"] = bson.M{
+			"$all": tags,
+		}
+	}
+
+	fmt.Println(tags)
+
+	cursor, err := m.articles.Find(ctx, filter)
 	if err != nil {
 		return nil, err
 	}
