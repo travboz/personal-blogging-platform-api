@@ -32,37 +32,29 @@ The brief follows:
    git clone https://github.com/travboz/personal-blogging-platform-api.git
    cd personal-blogging-platform-api
    ```
-2. Run docker container:
+2. Set up Go modules:
+   ```sh
+   go mod tidy
+   ```   
+3. Run docker container containing MongoDB instance:
     ```sh
     make compose/up
     ```
-3. Seed MongoDB instance:
+4. Seed MongoDB instance:
    ```sh
    make seed
    ```
-4. Run server:
+5. Run server:
     ```sh
     make run
     ```
-5. Navigate to `http://localhost<SERVER_PORT>` and call an endpoint
+6. Navigate to `http://localhost<SERVER_PORT>` and call an endpoint
 
 I will use example port `":7666"`.
 
 ### `.env` file
-This server uses a `.env` file for basic configuration.
-Here is an example of the `.env`:
-   ```sh
-BLOG_DB_CONTAINER_NAME=blog-mongo-db
-DB_ACCESS_PORT=27002
-
-SERVER_PORT=":7666"
-MONGO_DB_NAME=blog_articles
-MONGO_DB_USERNAME=username
-MONGO_DB_PASSWORD=secret
-MONGODB_URI=mongodb://username:secret@localhost:${DB_ACCESS_PORT}/${MONGO_DB_NAME}?authSource=admin&readPreference=primary&appname=MongDB%20Compass&directConnection=true&ssl=false
-COMPASS_USER_MONGODB_URI=mongodb://username:secret@localhost:27002/blog_articles?authSource=admin&readPreference=primary&appname=MongDB%20Compass&directConnection=true&ssl=false
-   ```
-   
+This server uses a `.env` environment file for configuration.
+For an example, see `.env.example`.
 
 ## API Endpoints
 
@@ -136,11 +128,10 @@ curl -X DELETE "http://localhost:7666/articles/67a0a3eef39fc03fe52450b5"
 ## Contributing
 Feel free to fork and submit PRs!
 
-## License:
-`MIT`
+## License: `MIT`
 
 
-This should work for GitHub! Let me know if you need any tweaks. 
+If there are any concerns regarding the licence, please contact me at `travis.bozic@hotmail.com`.
 
 
 ## Image
