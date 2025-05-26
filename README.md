@@ -29,16 +29,16 @@ The brief follows:
 
 1. Clone this repository:
    ```sh
-   git clone https://github.com/travboz/go-mongodb-user-api.git
-   cd go-mongodb-user-api
+   git clone https://github.com/travboz/personal-blogging-platform-api.git
+   cd personal-blogging-platform-api
    ```
 2. Run docker container:
     ```sh
-    make up
+    make compose/up
     ```
 3. Seed MongoDB instance:
    ```sh
-   make seed-db
+   make seed
    ```
 4. Run server:
     ```sh
