@@ -90,8 +90,6 @@ func (m *MongoStore) FetchAllArticles(ctx context.Context, content string, tags 
 		}
 	}
 
-	fmt.Println(tags)
-
 	cursor, err := m.articles.Find(ctx, filter)
 	if err != nil {
 		return nil, err

@@ -28,7 +28,7 @@ func createArticleHandler(logger *slog.Logger, store repository.Store) http.Hand
 
 		article := &data.Article{
 			Content:   input.Content,
-			CreatedAt: time.Now(),
+			CreatedAt: data.CustomDate(time.Now()),
 			Tags:      input.Tags,
 		}
 

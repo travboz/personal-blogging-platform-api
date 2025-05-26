@@ -1,8 +1,6 @@
 package data
 
 import (
-	"time"
-
 	"github.com/travboz/backend-projects/personal-blog-api/internal/validator"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -10,7 +8,7 @@ import (
 type Article struct {
 	ID        primitive.ObjectID `bson:"_id,omitempty"`
 	Content   string             `json:"content" bson:"content"`
-	CreatedAt time.Time          `bson:"created_at"`
+	CreatedAt CustomDate         `bson:"created_at"`
 	Tags      []string           `bson:"tags"`
 }
 
